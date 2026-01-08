@@ -7,6 +7,7 @@ Personal AI Infrastructure - Modular AI assistant with skills, hooks, and observ
 - **CORE**: Personal AI Infrastructure core. AUTO-LOADS at session start...
 - **AutoDocs**: Auto-generates README.md and ARCHITECTURE.md documentation. ...
 - **Prompting**: Meta-prompting system for dynamic prompt generation using te...
+- **Investigator**: Analyzes repositories to understand architecture and provide...
 - **CreateSkill**: Create and validate skills. USE WHEN create skill, new skill...
 
 ## Quick Start
@@ -55,6 +56,7 @@ PAI uses a modular skill system. Skills are loaded automatically based on contex
 | **CORE** | Personal AI Infrastructure core. AUTO-LOADS at ses... |
 | **AutoDocs** | Auto-generates README.md and ARCHITECTURE.md docum... |
 | **Prompting** | Meta-prompting system for dynamic prompt generatio... |
+| **Investigator** | Analyzes repositories to understand architecture a... |
 | **CreateSkill** | Create and validate skills. USE WHEN create skill,... |
 
 ## CLI Tools
@@ -151,6 +153,41 @@ ValidateTemplate.ts - Template Syntax Validator
 ```bash
 bun run ValidateTemplate.ts --template <path> [--data <path>] [--strict]
 ```
+
+
+### PaiInvestigate
+
+PaiInvestigate.ts - Repository Signal Collector for Investigation
+
+```bash
+bun PaiInvestigate.ts --repo . --question "How should I implement X?"
+bun PaiInvestigate.ts --repo . --question "Architecture?" --output prompt
+bun PaiInvestigate.ts --repo . --question "test" --output signals
+```
+
+
+### Prompts
+
+Prompts.ts - Fixed Investigator Prompt Template
+
+
+
+### Schema
+
+Schema.ts - TypeScript interfaces for Investigation
+
+
+
+### Collect
+
+Collect.ts - Deterministic Repository Signal Collection
+
+
+
+### Report
+
+Report.ts - Investigation Report Storage and Rendering
+
 
 
 

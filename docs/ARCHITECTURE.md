@@ -69,7 +69,7 @@ C4Container
     Person(user, "Developer", "Software engineer")
 
     System_Boundary(pai, "PAI System") {
-        Container(skills, "Skills System", "TypeScript/Markdown", "Modular capability definitions\n4 skills installed")
+        Container(skills, "Skills System", "TypeScript/Markdown", "Modular capability definitions\n5 skills installed")
         Container(hooks, "Hook System", "TypeScript/Bun", "Event-driven automation\n8 hooks active")
         Container(tools, "CLI Tools", "TypeScript/Bun", "Standalone utilities\n3 tools available")
         Container(history, "History System", "JSONL/Markdown", "Session and activity tracking")
@@ -115,6 +115,7 @@ C4Component
         Component(skill_core, "CORE", "Skill", "Personal AI Infrastructure core. AUTO...")
         Component(skill_autodocs, "AutoDocs", "Skill", "Auto-generates README.md and ARCHITEC...")
         Component(skill_prompting, "Prompting", "Skill", "Meta-prompting system for dynamic pro...")
+        Component(skill_investigator, "Investigator", "Skill", "Analyzes repositories to understand a...")
         Component(skill_createskill, "CreateSkill", "Skill", "Create and validate skills. USE WHEN ...")
         Component(skill_index, "Skill Index", "JSON", "Discovery and routing")
         Component(skill_tools, "Skill Tools", "TypeScript", "Per-skill CLI utilities")
@@ -126,6 +127,7 @@ C4Component
     Rel(claude, skill_index, "Discovers skills")
     Rel(skill_autodocs, skill_tools, "Uses tools")
     Rel(skill_prompting, skill_tools, "Uses tools")
+    Rel(skill_investigator, skill_tools, "Uses tools")
     Rel(config, skill_index, "Tier definitions")
 ```
 
@@ -174,6 +176,7 @@ C4Component
         Component(tool_autodocs, "AutoDocs", "CLI Tool", "AutoDocs.ts - AI-Assisted Docume...")
         Component(tool_rendertemplate, "RenderTemplate", "CLI Tool", "RenderTemplate.ts - Template Ren...")
         Component(tool_validatetemplate, "ValidateTemplate", "CLI Tool", "ValidateTemplate.ts - Template S...")
+        Component(tool_paiinvestigate, "PaiInvestigate", "CLI Tool", "PaiInvestigate.ts - Repository S...")
     }
 
     Container_Ext(skills, "Skills System")
@@ -248,6 +251,20 @@ Meta-prompting system for dynamic prompt generation using templates, standards, 
 **Tools:**
 - `RenderTemplate`: RenderTemplate.ts - Template Rendering Engine
 - `ValidateTemplate`: ValidateTemplate.ts - Template Syntax Validator
+
+### Investigator
+
+**Path:** `skills/Investigator/SKILL.md`
+
+Analyzes repositories to understand architecture and provide implementation guidance. USE WHEN investigate repo OR analyze codebase OR understand architecture OR how to implement OR explore project structure OR onboard to new project.
+
+
+**Tools:**
+- `PaiInvestigate`: PaiInvestigate.ts - Repository Signal Collector for Investigation
+- `Prompts`: Prompts.ts - Fixed Investigator Prompt Template
+- `Schema`: Schema.ts - TypeScript interfaces for Investigation
+- `Collect`: Collect.ts - Deterministic Repository Signal Collection
+- `Report`: Report.ts - Investigation Report Storage and Rendering
 
 ### CreateSkill
 

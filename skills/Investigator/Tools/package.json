@@ -1,0 +1,15 @@
+{
+  "name": "pai-investigator",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Repository Signal Collector for PAI Investigation",
+  "main": "PaiInvestigate.ts",
+  "scripts": {
+    "investigate": "bun PaiInvestigate.ts"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@types/bun": "latest",
+    "typescript": "^5.0.0"
+  }
+}

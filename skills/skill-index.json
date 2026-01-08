@@ -1,8 +1,8 @@
 {
-  "generated": "2026-01-08T03:17:50.144Z",
-  "totalSkills": 4,
+  "generated": "2026-01-08T18:38:22.687Z",
+  "totalSkills": 5,
   "alwaysLoadedCount": 1,
-  "deferredCount": 3,
+  "deferredCount": 4,
   "skills": {
     "core": {
       "name": "CORE",
@@ -63,6 +63,28 @@
         "optimization",
         "programmatic",
         "composition"
+      ],
+      "workflows": [],
+      "tier": "deferred"
+    },
+    "investigator": {
+      "name": "Investigator",
+      "path": "Investigator/SKILL.md",
+      "fullDescription": "Analyzes repositories to understand architecture and provide implementation guidance. USE WHEN investigate repo OR analyze codebase OR understand architecture OR how to implement OR explore project structure OR onboard to new project.",
+      "triggers": [
+        "investigate",
+        "repo",
+        "analyze",
+        "codebase",
+        "understand",
+        "architecture",
+        "how",
+        "implement",
+        "explore",
+        "project",
+        "structure",
+        "onboard",
+        "new"
       ],
       "workflows": [],
       "tier": "deferred"
