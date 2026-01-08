@@ -1,0 +1,19 @@
+# Dependencies
+node_modules/
+bun.lock
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+
+# Session files
+.current-session
+agent-sessions.json
+
+# History (contains session data)
+history/
+
+# OS files
+.DS_Store
+Thumbs.db

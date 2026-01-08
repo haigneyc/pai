@@ -1,0 +1,85 @@
+{
+  "generated": "2026-01-08T03:17:50.144Z",
+  "totalSkills": 4,
+  "alwaysLoadedCount": 1,
+  "deferredCount": 3,
+  "skills": {
+    "core": {
+      "name": "CORE",
+      "path": "CORE/SKILL.md",
+      "fullDescription": "Personal AI Infrastructure core. AUTO-LOADS at session start. USE WHEN any session begins OR user asks about identity, response format, contacts, stack preferences, security protocols, or asset management.",
+      "triggers": [
+        "any",
+        "session",
+        "begins",
+        "user",
+        "asks",
+        "about",
+        "identity",
+        "response",
+        "format",
+        "contacts",
+        "stack",
+        "preferences",
+        "security",
+        "protocols",
+        "asset",
+        "management"
+      ],
+      "workflows": [],
+      "tier": "always"
+    },
+    "autodocs": {
+      "name": "AutoDocs",
+      "path": "AutoDocs/SKILL.md",
+      "fullDescription": "Auto-generates README.md and ARCHITECTURE.md documentation. USE WHEN git pre-commit triggers OR user requests documentation generation OR user says \"generate readme\" OR \"update architecture\" OR \"generate docs\".",
+      "triggers": [
+        "git",
+        "pre-commit",
+        "triggers",
+        "user",
+        "requests",
+        "documentation",
+        "generation",
+        "says",
+        "\"generate",
+        "readme\"",
+        "\"update",
+        "architecture\"",
+        "docs\""
+      ],
+      "workflows": [],
+      "tier": "deferred"
+    },
+    "prompting": {
+      "name": "Prompting",
+      "path": "Prompting/SKILL.md",
+      "fullDescription": "Meta-prompting system for dynamic prompt generation using templates, standards, and patterns. USE WHEN meta-prompting, template generation, prompt optimization, or programmatic prompt composition.",
+      "triggers": [
+        "meta-prompting",
+        "template",
+        "generation",
+        "prompt",
+        "optimization",
+        "programmatic",
+        "composition"
+      ],
+      "workflows": [],
+      "tier": "deferred"
+    },
+    "createskill": {
+      "name": "CreateSkill",
+      "path": "CreateSkill/SKILL.md",
+      "fullDescription": "Create and validate skills. USE WHEN create skill, new skill, skill structure, canonicalize. SkillSearch('createskill') for docs.",
+      "triggers": [
+        "create",
+        "skill",
+        "new",
+        "structure",
+        "canonicalize"
+      ],
+      "workflows": [],
+      "tier": "deferred"
+    }
+  }
+}
