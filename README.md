@@ -16,7 +16,6 @@ Personal AI Infrastructure - Modular AI assistant with skills, hooks, and observ
 
 - [Bun](https://bun.sh) v1.0+
 - [Claude Code](https://claude.ai/code) CLI
-- Anthropic API key (for AI-assisted features)
 
 ### Installation
 
@@ -25,9 +24,8 @@ Personal AI Infrastructure - Modular AI assistant with skills, hooks, and observ
 git clone <repo-url>
 cd pai
 
-# Set environment variables
+# Set environment variable
 export PAI_DIR="$(pwd)"
-export ANTHROPIC_API_KEY="your-api-key"
 
 # Install skill dependencies
 cd skills/AutoDocs/Tools && bun install && cd -
@@ -125,14 +123,13 @@ bun $PAI_DIR/skills/AutoDocs/Tools/CodeAnalyzer.ts --pretty # Pretty print
 
 ### AutoDocs
 
-AutoDocs.ts - AI-Assisted Documentation Generator
+AutoDocs.ts - Template-Based Documentation Generator
 
 ```bash
 bun $PAI_DIR/skills/AutoDocs/Tools/AutoDocs.ts pre-commit   # Git hook mode
 bun $PAI_DIR/skills/AutoDocs/Tools/AutoDocs.ts readme       # Generate README only
 bun $PAI_DIR/skills/AutoDocs/Tools/AutoDocs.ts architecture # Generate architecture only
 bun $PAI_DIR/skills/AutoDocs/Tools/AutoDocs.ts full         # Generate all docs
-bun $PAI_DIR/skills/AutoDocs/Tools/AutoDocs.ts full --no-ai # Template-only mode
 ```
 
 **Commands:** readme, architecture, arch, full, all, help

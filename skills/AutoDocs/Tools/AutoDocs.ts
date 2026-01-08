@@ -1,19 +1,17 @@
 #!/usr/bin/env bun
 /**
- * AutoDocs.ts - AI-Assisted Documentation Generator
+ * AutoDocs.ts - Template-Based Documentation Generator
  *
  * Main CLI tool for auto-generating README.md and docs/ARCHITECTURE.md.
- * Uses Claude API for intelligent content generation based on codebase analysis.
+ * Uses Handlebars templates with codebase analysis for consistent documentation.
  *
  * Usage:
  *   bun $PAI_DIR/skills/AutoDocs/Tools/AutoDocs.ts pre-commit   # Git hook mode
  *   bun $PAI_DIR/skills/AutoDocs/Tools/AutoDocs.ts readme       # Generate README only
  *   bun $PAI_DIR/skills/AutoDocs/Tools/AutoDocs.ts architecture # Generate architecture only
  *   bun $PAI_DIR/skills/AutoDocs/Tools/AutoDocs.ts full         # Generate all docs
- *   bun $PAI_DIR/skills/AutoDocs/Tools/AutoDocs.ts full --no-ai # Template-only mode
  */
 
-import Anthropic from '@anthropic-ai/sdk';
 import Handlebars from 'handlebars';
 import { readFile, writeFile, mkdir } from 'fs/promises';
 import { join, dirname } from 'path';
@@ -32,22 +30,6 @@ const ARCHITECTURE_PATH = join(PAI_DIR, 'docs', 'ARCHITECTURE.md');
 // Use full path to git because bun snap has restricted PATH
 const GIT_PATH = '/usr/bin/git';
 const STATE_FILE = join(PAI_DIR, '.autodocs-state.json');
-
-// Timeout for AI generation (60 seconds)
-const AI_TIMEOUT = 60000;
-
-// ============================================================================
-// Anthropic Client
-// ============================================================================
-
-let anthropicClient: Anthropic | null = null;
-
-function getAnthropicClient(): Anthropic {
-  if (!anthropicClient) {
-    anthropicClient = new Anthropic();
-  }
-  return anthropicClient;
-}
 
 // ============================================================================
 // Template Registration
@@ -87,46 +69,10 @@ async function loadTemplate(name: string): Promise<HandlebarsTemplateDelegate> {
 }
 
 // ============================================================================
-// AI-Assisted Generation
-// ============================================================================
-
-async function generateWithAI(prompt: string, maxTokens: number = 4096): Promise<string> {
-  const client = getAnthropicClient();
-
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), AI_TIMEOUT);
-
-  try {
-    const message = await client.messages.create({
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: maxTokens,
-      temperature: 0.2,
-      messages: [
-        {
-          role: 'user',
-          content: prompt
-        }
-      ]
-    });
-
-    clearTimeout(timeout);
-
-    const textBlock = message.content.find(block => block.type === 'text');
-    return textBlock ? textBlock.text : '';
-  } catch (error) {
-    clearTimeout(timeout);
-    if ((error as Error).name === 'AbortError') {
-      throw new Error('AI generation timed out');
-    }
-    throw error;
-  }
-}
-
-// ============================================================================
 // README Generation
 // ============================================================================
 
-async function generateReadme(metadata: ProjectMetadata, useAI: boolean = true): Promise<string> {
+async function generateReadme(metadata: ProjectMetadata): Promise<string> {
   const templateData = {
     project: {
       name: metadata.name,
@@ -158,27 +104,13 @@ async function generateReadme(metadata: ProjectMetadata, useAI: boolean = true):
   };
 
   // Try to load template
-  let baseContent: string;
   try {
     const template = await loadTemplate('README');
-    baseContent = template(templateData);
+    return template(templateData);
   } catch {
     // Fallback to inline template if file doesn't exist
-    baseContent = generateReadmeFallback(templateData);
+    return generateReadmeFallback(templateData);
   }
-
-  // If AI is enabled, enhance the content
-  if (useAI && process.env.ANTHROPIC_API_KEY) {
-    try {
-      const enhancedContent = await enhanceReadmeWithAI(baseContent, metadata);
-      return enhancedContent;
-    } catch (error) {
-      console.warn(`[AutoDocs] AI enhancement failed: ${(error as Error).message}`);
-      console.warn('[AutoDocs] Using template-only output');
-    }
-  }
-
-  return baseContent;
 }
 
 function generateReadmeFallback(data: any): string {
@@ -201,7 +133,6 @@ ${data.project.description}
 
 - [Bun](https://bun.sh) v1.0+
 - [Claude Code](https://claude.ai/code) CLI
-- Anthropic API key
 
 ### Installation
 
@@ -210,12 +141,12 @@ ${data.project.description}
 git clone <repo-url>
 cd pai
 
-# Set environment variables
+# Set environment variable
 export PAI_DIR="$(pwd)"
-export ANTHROPIC_API_KEY="your-api-key"
 
-# Install dependencies (if any)
+# Install skill dependencies
 cd skills/AutoDocs/Tools && bun install && cd -
+cd skills/Prompting/Tools && bun install && cd -
 \`\`\`
 
 ### First Run
@@ -250,44 +181,11 @@ ${data.directories.map((d: any) => `| ${d.name}/ | ${d.purpose} | ${d.files} |`)
 `;
 }
 
-async function enhanceReadmeWithAI(baseContent: string, metadata: ProjectMetadata): Promise<string> {
-  const prompt = `You are a technical writer improving documentation for a developer tool.
-
-Below is auto-generated README content for "PAI" (Personal AI Infrastructure), a modular AI assistant system.
-
-Please enhance this README by:
-1. Improving the Quick Start section to be clearer and more actionable
-2. Adding a brief "Features" section highlighting key capabilities
-3. Ensuring the CLI tool descriptions are clear and useful
-4. Adding any missing sections that would help developers get started
-
-Keep the same overall structure and markdown formatting. Keep it concise - developers prefer short, scannable docs.
-
-IMPORTANT: Return ONLY the enhanced markdown content, no explanation or commentary.
-
----
-
-Current README:
-
-${baseContent}
-
----
-
-Additional context about the project:
-- Runtime: ${metadata.runtime}
-- Skills installed: ${metadata.skills.map(s => s.name).join(', ')}
-- Hooks active: ${metadata.hooks.length}
-- Primary use: AI-assisted coding with Claude Code CLI`;
-
-  const enhanced = await generateWithAI(prompt, 4096);
-  return enhanced || baseContent;
-}
-
 // ============================================================================
 // Architecture Generation
 // ============================================================================
 
-async function generateArchitecture(metadata: ProjectMetadata, useAI: boolean = true): Promise<string> {
+async function generateArchitecture(metadata: ProjectMetadata): Promise<string> {
   const diagrams = await generateC4Diagrams(metadata);
 
   const templateData = {
@@ -305,27 +203,13 @@ async function generateArchitecture(metadata: ProjectMetadata, useAI: boolean = 
   };
 
   // Try to load template
-  let baseContent: string;
   try {
     const template = await loadTemplate('ArchitectureC4');
-    baseContent = template(templateData);
+    return template(templateData);
   } catch {
     // Fallback to inline generation
-    baseContent = generateArchitectureFallback(templateData, diagrams);
+    return generateArchitectureFallback(templateData, diagrams);
   }
-
-  // If AI is enabled, enhance the architecture description
-  if (useAI && process.env.ANTHROPIC_API_KEY) {
-    try {
-      const enhancedContent = await enhanceArchitectureWithAI(baseContent, metadata, diagrams);
-      return enhancedContent;
-    } catch (error) {
-      console.warn(`[AutoDocs] AI enhancement failed: ${(error as Error).message}`);
-      console.warn('[AutoDocs] Using template-only output');
-    }
-  }
-
-  return baseContent;
 }
 
 function generateArchitectureFallback(data: any, diagrams: C4Diagrams): string {
@@ -369,7 +253,7 @@ ${diagrams.componentDiagrams.map(c => `#### ${c.name}\n\n${c.diagram}`).join('\n
 | Language | TypeScript |
 | Templates | Handlebars |
 | Diagrams | Mermaid |
-| AI | Anthropic Claude API |
+| AI | Claude Code CLI |
 
 ## Key Components
 
@@ -393,32 +277,6 @@ ${data.hooks.map((h: any) => `| ${h.name} | ${h.eventTypes.join(', ') || 'Multip
 
 *Architecture documentation auto-generated by PAI AutoDocs*
 `;
-}
-
-async function enhanceArchitectureWithAI(baseContent: string, metadata: ProjectMetadata, diagrams: C4Diagrams): Promise<string> {
-  const prompt = `You are a software architect writing C4 model documentation.
-
-Below is auto-generated architecture documentation for "PAI" (Personal AI Infrastructure).
-
-Please enhance this documentation by:
-1. Adding a brief architectural overview explaining the design philosophy
-2. Improving the descriptions of each component/container
-3. Adding a "Data Flow" section explaining how data moves through the system
-4. Adding any architectural decisions or trade-offs worth noting
-
-Keep the C4 diagrams exactly as they are (don't modify the mermaid code blocks).
-Keep the document well-structured and scannable.
-
-IMPORTANT: Return ONLY the enhanced markdown content, no explanation or commentary.
-
----
-
-Current Architecture Doc:
-
-${baseContent}`;
-
-  const enhanced = await generateWithAI(prompt, 8192);
-  return enhanced || baseContent;
 }
 
 // ============================================================================
@@ -526,29 +384,29 @@ async function runPreCommit(): Promise<void> {
   }
 }
 
-async function runReadme(useAI: boolean = true): Promise<void> {
+async function runReadme(): Promise<void> {
   console.log('[AutoDocs] Generating README.md...');
   const metadata = await analyzeProject();
-  const readme = await generateReadme(metadata, useAI);
+  const readme = await generateReadme(metadata);
   await writeReadme(readme);
   await updateState(true, false);
 }
 
-async function runArchitecture(useAI: boolean = true): Promise<void> {
+async function runArchitecture(): Promise<void> {
   console.log('[AutoDocs] Generating docs/ARCHITECTURE.md...');
   const metadata = await analyzeProject();
-  const arch = await generateArchitecture(metadata, useAI);
+  const arch = await generateArchitecture(metadata);
   await writeArchitecture(arch);
   await updateState(false, true);
 }
 
-async function runFull(useAI: boolean = true): Promise<void> {
+async function runFull(): Promise<void> {
   console.log('[AutoDocs] Generating all documentation...');
   const metadata = await analyzeProject();
 
   const [readme, arch] = await Promise.all([
-    generateReadme(metadata, useAI),
-    generateArchitecture(metadata, useAI)
+    generateReadme(metadata),
+    generateArchitecture(metadata)
   ]);
 
   await writeReadme(readme);
@@ -567,7 +425,6 @@ async function main() {
 
   const args = process.argv.slice(2);
   const command = args[0] || 'help';
-  const noAI = args.includes('--no-ai');
 
   switch (command) {
     case 'pre-commit':
@@ -575,26 +432,26 @@ async function main() {
       break;
 
     case 'readme':
-      await runReadme(!noAI);
+      await runReadme();
       break;
 
     case 'architecture':
     case 'arch':
-      await runArchitecture(!noAI);
+      await runArchitecture();
       break;
 
     case 'full':
     case 'all':
-      await runFull(!noAI);
+      await runFull();
       break;
 
     case 'help':
     default:
       console.log(`
-AutoDocs - AI-Assisted Documentation Generator
+AutoDocs - Template-Based Documentation Generator
 
 Usage:
-  bun AutoDocs.ts <command> [options]
+  bun AutoDocs.ts <command>
 
 Commands:
   pre-commit    Git hook mode (auto-detects what needs updating)
@@ -602,12 +459,9 @@ Commands:
   architecture  Generate docs/ARCHITECTURE.md only
   full          Generate all documentation
 
-Options:
-  --no-ai       Skip AI enhancement, use templates only
-
 Examples:
-  bun AutoDocs.ts full              # Generate all docs with AI
-  bun AutoDocs.ts readme --no-ai    # Generate README without AI
+  bun AutoDocs.ts full              # Generate all docs
+  bun AutoDocs.ts readme            # Generate README only
   bun AutoDocs.ts pre-commit        # Run in git hook mode
 `);
   }

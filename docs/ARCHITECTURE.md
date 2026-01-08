@@ -173,7 +173,7 @@ C4Component
         Component(tool_c4generator, "C4Generator", "CLI Tool", "C4Generator.ts - Generate C4 arc...")
         Component(tool_changedetector, "ChangeDetector", "CLI Tool", "ChangeDetector.ts - Detect when ...")
         Component(tool_codeanalyzer, "CodeAnalyzer", "CLI Tool", "CodeAnalyzer.ts - Extract projec...")
-        Component(tool_autodocs, "AutoDocs", "CLI Tool", "AutoDocs.ts - AI-Assisted Docume...")
+        Component(tool_autodocs, "AutoDocs", "CLI Tool", "AutoDocs.ts - Template-Based Doc...")
         Component(tool_rendertemplate, "RenderTemplate", "CLI Tool", "RenderTemplate.ts - Template Ren...")
         Component(tool_validatetemplate, "ValidateTemplate", "CLI Tool", "ValidateTemplate.ts - Template S...")
         Component(tool_paiinvestigate, "PaiInvestigate", "CLI Tool", "PaiInvestigate.ts - Repository S...")
@@ -239,7 +239,7 @@ Auto-generates README.md and ARCHITECTURE.md documentation. USE WHEN git pre-com
 - `C4Generator`: C4Generator.ts - Generate C4 architecture diagrams in Mermaid syntax
 - `ChangeDetector`: ChangeDetector.ts - Detect when documentation needs updating
 - `CodeAnalyzer`: CodeAnalyzer.ts - Extract project metadata for documentation generation
-- `AutoDocs`: AutoDocs.ts - AI-Assisted Documentation Generator
+- `AutoDocs`: AutoDocs.ts - Template-Based Documentation Generator
 
 ### Prompting
 
