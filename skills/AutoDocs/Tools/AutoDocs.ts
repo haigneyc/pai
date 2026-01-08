@@ -28,6 +28,9 @@ const PAI_DIR = process.env.PAI_DIR || process.env.PAI_HOME || join(process.env.
 const TEMPLATES_DIR = join(dirname(import.meta.path), '..', 'Templates');
 const README_PATH = join(PAI_DIR, 'README.md');
 const ARCHITECTURE_PATH = join(PAI_DIR, 'docs', 'ARCHITECTURE.md');
+
+// Use full path to git because bun snap has restricted PATH
+const GIT_PATH = '/usr/bin/git';
 const STATE_FILE = join(PAI_DIR, '.autodocs-state.json');
 
 // Timeout for AI generation (60 seconds)
@@ -455,15 +458,18 @@ async function updateState(readmeUpdated: boolean, archUpdated: boolean): Promis
     lastAnalyzedFiles: []
   };
 
-  // Get current commit hash
-  try {
-    const proc = Bun.spawn(['git', 'rev-parse', 'HEAD'], {
-      cwd: PAI_DIR,
-      stdout: 'pipe'
-    });
-    state.lastCommitHash = (await new Response(proc.stdout).text()).trim();
-  } catch {
-    // Ignore git errors
+  // Get current commit hash (from env if available, since bun snap can't access git)
+  state.lastCommitHash = process.env.AUTODOCS_COMMIT_HASH || '';
+  if (!state.lastCommitHash) {
+    try {
+      const proc = Bun.spawn([GIT_PATH, 'rev-parse', 'HEAD'], {
+        cwd: PAI_DIR,
+        stdout: 'pipe'
+      });
+      state.lastCommitHash = (await new Response(proc.stdout).text()).trim();
+    } catch {
+      // Ignore git errors
+    }
   }
 
   // Store file hashes

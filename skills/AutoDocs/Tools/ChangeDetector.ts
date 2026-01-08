@@ -19,6 +19,9 @@ import { createHash } from 'crypto';
 const PAI_DIR = process.env.PAI_DIR || process.env.PAI_HOME || join(process.env.HOME || '', 'pai');
 const STATE_FILE = join(PAI_DIR, '.autodocs-state.json');
 
+// Use full path to git because bun snap has restricted PATH
+const GIT_PATH = '/usr/bin/git';
+
 // ============================================================================
 // Type Definitions
 // ============================================================================
@@ -74,9 +77,29 @@ const CRITICAL_FILES: RegExp[] = [
 // Git Integration
 // ============================================================================
 
+// Note: bun snap has restricted access and can't call git directly.
+// The pre-commit hook passes git info via environment variables.
+
+function getStagedFilesFromEnv(): string[] {
+  const envFiles = process.env.AUTODOCS_STAGED_FILES;
+  if (!envFiles) return [];
+  return envFiles.split(':').filter(f => f.length > 0);
+}
+
+function getCommitHashFromEnv(): string {
+  return process.env.AUTODOCS_COMMIT_HASH || '';
+}
+
 async function getStagedFiles(): Promise<string[]> {
+  // First try environment variable (set by pre-commit hook)
+  const envFiles = getStagedFilesFromEnv();
+  if (envFiles.length > 0) {
+    return envFiles;
+  }
+
+  // Fallback to git command (may fail in bun snap)
   try {
-    const proc = Bun.spawn(['git', 'diff', '--cached', '--name-only'], {
+    const proc = Bun.spawn([GIT_PATH, 'diff', '--cached', '--name-only'], {
       cwd: PAI_DIR,
       stdout: 'pipe',
       stderr: 'pipe'
@@ -96,8 +119,15 @@ async function getStagedFiles(): Promise<string[]> {
 }
 
 async function getLastCommitHash(): Promise<string> {
+  // First try environment variable (set by pre-commit hook)
+  const envHash = getCommitHashFromEnv();
+  if (envHash) {
+    return envHash;
+  }
+
+  // Fallback to git command (may fail in bun snap)
   try {
-    const proc = Bun.spawn(['git', 'rev-parse', 'HEAD'], {
+    const proc = Bun.spawn([GIT_PATH, 'rev-parse', 'HEAD'], {
       cwd: PAI_DIR,
       stdout: 'pipe',
       stderr: 'pipe'
@@ -116,8 +146,10 @@ async function getLastCommitHash(): Promise<string> {
 async function getFilesSinceLastGeneration(lastCommit: string): Promise<string[]> {
   if (!lastCommit) return [];
 
+  // Can't easily do git diff from bun snap, skip this check
+  // The staged files check is more important for pre-commit
   try {
-    const proc = Bun.spawn(['git', 'diff', '--name-only', lastCommit, 'HEAD'], {
+    const proc = Bun.spawn([GIT_PATH, 'diff', '--name-only', lastCommit, 'HEAD'], {
       cwd: PAI_DIR,
       stdout: 'pipe',
       stderr: 'pipe'
@@ -221,6 +253,14 @@ export async function detectChanges(force: boolean = false): Promise<ChangeDetec
   }
 
   const state = await loadState();
+
+  // First-run detection: if no commit hash tracked but skills exist, regenerate
+  if (!state.lastCommitHash && existsSync(join(PAI_DIR, 'skills'))) {
+    result.needsReadmeUpdate = true;
+    result.needsArchitectureUpdate = true;
+    result.triggers.push('First run - no previous state tracked');
+    return result;
+  }
 
   // Get staged files and files since last generation
   const stagedFiles = await getStagedFiles();
