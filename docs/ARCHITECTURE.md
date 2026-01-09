@@ -2,7 +2,7 @@
 
 > C4 Model documentation for Personal AI Infrastructure
 
-**Last Updated:** 2026-01-08
+**Last Updated:** 2026-01-09
 
 ## Overview
 
@@ -71,7 +71,7 @@ C4Container
     System_Boundary(pai, "PAI System") {
         Container(skills, "Skills System", "TypeScript/Markdown", "Modular capability definitions\n5 skills installed")
         Container(hooks, "Hook System", "TypeScript/Bun", "Event-driven automation\n8 hooks active")
-        Container(tools, "CLI Tools", "TypeScript/Bun", "Standalone utilities\n3 tools available")
+        Container(tools, "CLI Tools", "TypeScript/Bun", "Standalone utilities\n4 tools available")
         Container(history, "History System", "JSONL/Markdown", "Session and activity tracking")
         Container(observability, "Observability", "Vue/Bun", "Real-time monitoring dashboard")
         Container(config, "Configuration", "JSON", "System settings and hook definitions")
@@ -167,6 +167,7 @@ C4Component
     title CLI Tools Components (Level 3)
 
     Container_Boundary(tools, "CLI Tools") {
+        Component(tool_module_rules_cli, "module-rules-cli", "CLI Tool", "module-rules-cli.ts")
         Component(tool_skillsearch, "SkillSearch", "CLI Tool", "SkillSearch.ts")
         Component(tool_paiarchitecture, "PaiArchitecture", "CLI Tool", "PaiArchitecture.ts")
         Component(tool_generateskillindex, "GenerateSkillIndex", "CLI Tool", "GenerateSkillIndex.ts")
@@ -176,7 +177,6 @@ C4Component
         Component(tool_autodocs, "AutoDocs", "CLI Tool", "AutoDocs.ts - Template-Based Doc...")
         Component(tool_rendertemplate, "RenderTemplate", "CLI Tool", "RenderTemplate.ts - Template Ren...")
         Component(tool_validatetemplate, "ValidateTemplate", "CLI Tool", "ValidateTemplate.ts - Template S...")
-        Component(tool_paiinvestigate, "PaiInvestigate", "CLI Tool", "PaiInvestigate.ts - Repository S...")
     }
 
     Container_Ext(skills, "Skills System")

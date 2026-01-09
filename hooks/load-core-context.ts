@@ -5,6 +5,7 @@
 import { existsSync, readFileSync } from 'fs';
 import { join } from 'path';
 import { homedir } from 'os';
+import { detectAndLoadModuleRules } from './lib/module-rules';
 
 interface SessionStartPayload {
   session_id: string;
@@ -65,6 +66,19 @@ async function main() {
     // Read the skill content
     const skillContent = readFileSync(coreSkillPath, 'utf-8');
 
+    // Detect and load module rules based on current context
+    // Resolve real home (snap sandbox overrides HOME)
+    const snapHome = process.env.HOME || '';
+    const home = snapHome.includes('/snap/') && process.env.USER
+      ? `/home/${process.env.USER}`
+      : (process.env.HOME || homedir());
+    const moduleRulesContent = await detectAndLoadModuleRules({
+      userDir: join(home, '.claude'),
+      projectDir: join(process.cwd(), '.claude'),
+      cwd: process.cwd(),
+      prompt: payload.prompt, // Session prompt if available
+    });
+
     // Output as system-reminder for Claude to process
     // This format is recognized by Claude Code
     const output = `<system-reminder>
@@ -75,6 +89,7 @@ PAI CORE CONTEXT (Auto-loaded at Session Start)
 The following context has been loaded from ${coreSkillPath}:
 
 ${skillContent}
+${moduleRulesContent ? `\n---\n\n${moduleRulesContent}` : ''}
 
 This context is now active for this session. Follow all instructions, preferences, and guidelines contained above.
 </system-reminder>
